@@ -21,3 +21,10 @@ Mastodon Backup Data & Sqlite Management Tool
 
 - 完成后前往主页即可浏览备份了
 
+## 参见
+
+[mastodon-backup](https://github.com/kensanata/mastodon-backup)
+
+[mastodon-data-viewer.py](https://github.com/blackle/mastodon-data-viewer.py)
+
+[Flask 入门教程](https://tutorial.helloflask.com/)
