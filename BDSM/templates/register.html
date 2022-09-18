@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>授权</h3>
+<p>Visit the following URL and authorize the app: </p>
+<a href='{{ url }}' target="_blank">{{ url }}</a>
+
+<p>Then paste the access token here:"</p>
+
+<form method="post">
+    Token: <input type="text" name="token" autocomplete="off" required></br>
+    <input class="btn" type="submit" name="submit" value="提交">
+</form>
+{% endblock %}

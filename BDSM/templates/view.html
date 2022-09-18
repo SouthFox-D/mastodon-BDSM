@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for toot in toots %}
+    <div class="toot">
+        <div class="status">
+            <div class="meta">
+                <strong><span class ="username">{{ toot.acct }}</span></strong>
+                <a href="{{ toot.url }}" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="time">
+                {% if toot. visibility == "public"%}
+                <span class="visibility-icon"><i class="fa-solid fa-earth-americas fa-globle"></i></span>
+                {% elif toot. visibility == "unlisted"%}
+                <span class="visibility-icon"><i class="fa-solid fa-lock-open fa-unlock"></i></span>
+                {% elif toot. visibility == "private"%}
+                <span class="visibility-icon"><i class="fa-solid fa-lock"></i></span>
+                {% elif toot. visibility == "direct"%}
+                <span class="visibility-icon"><i class="fa-solid fa-envelope fa-at"></i></span>
+                {% endif %}
+                <time>{{ toot.created_at }}</time></span></a>
+            </div>
+            <div class="content">
+                {{ toot.content|safe }}
+            </div>
+            <div class="icon-bar">
+                {% if toot.replies_count > 1 %}
+                <span><i class="fa-solid fa-reply-all"></i>{{ toot.replies_count }}</span>
+                {% else %}
+                <span><i class="fa-solid fa-reply"></i>{{ toot.replies_count }}</span>
+                {% endif %}
+
+                {% if toot.reblogged %}
+                <span><i class="fa-solid fa-arrow-rotate-right"></i>{{ toot.reblogs_count}}</span>
+                {% else %}
+                <span><i class="fa-solid fa-retweet"></i></i>{{ toot.reblogs_count}}</span>
+                {% endif %}
+
+                {% if toot.favourited %}
+                <span><i class="fa-solid fa-star"></i>{{ toot.favourites_count }}</span>
+                {% else %}
+                <span><i class="fa-regular fa-star"></i>{{ toot.favourites_count }}</span>
+                {% endif %}
+
+                {% if toot.bookmarked %}
+                <span><i class="fa-solid fa-bookmark"></i></span>
+                {% else %}
+                <span><i class="fa-regular fa-bookmark"></i></span>
+                {% endif %}
+                </div>
+                </div>
+                </div>
+                {% endfor %}
+
+                <div class="pagination d-flex justify-content-center">
+    {% if pagination.has_prev %}
+        <span>
+            <a class='page-number' href="{{ url_for('index', page=pagination.prev_num) }}">
+                {{ '<<<' }}
+            </a>
+        </span>
+    {% endif %}
+
+    {% for number in pagination.iter_pages() %}
+        {% if number == None %}
+            <span>...</span>
+        {% elif pagination.page != number %}
+            <span>
+                    <a class='page-number'
+                        href="{{ url_for('index', page=number) }}">
+                    {{ number }}
+                    </a>
+            </span>
+        {% else %}
+            <span class='current-page-number'>{{ number }}</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+        <span>
+            <a class='page-number' href="{{ url_for('index', page=pagination.next_num) }}">
+                {{ '>>>' }}
+            </a>
+            </span>
+            {% endif %}
+            </div>
+            {% endblock %}

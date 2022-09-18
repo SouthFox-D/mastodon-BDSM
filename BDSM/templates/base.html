@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+<head>
+    {% block head %}
+      <meta charset="utf-8">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      <title>Untitled</title>
+      <meta name="description" content="">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="{{ url_for('static', filename='/css/all.min.css') }}" type="text/css">
+      <link rel="stylesheet" href="{{ url_for('static', filename='/css/bootstrap.min.css') }}" type="text/css">
+      <link rel="stylesheet" href="{{ url_for('static', filename='/css/style.css') }}" type="text/css">
+      <script src="{{ url_for('static', filename='/js/bootstrap.bundle.min.js') }}"
+              crossorigin="anonymous"></script>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    {% endblock %}
+</head>
+
+<body>
+  <div class="row">
+  {% for message in get_flashed_messages() %}
+    <div class="alert">{{ message }}</div>
+    {% endfor %}
+
+        <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">主页</a></li>
+            <li><a href="{{ url_for('settings') }}">设置</a></li>
+            <li><a href="{{ url_for('archive') }}">存档</a></li>
+            </ul>
+        </nav>
+    {% block content %}{% endblock %}
+    <footer>
+        <small><a href="https://git.southfox.me/southfox/mastodon-BDSM">Code</a></small>
+    </footer>
+  </div>
+</body>
+
+</html>

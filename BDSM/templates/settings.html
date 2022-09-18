@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>设置</h3>
+<form method="post" class="form-horizontal" role="form">
+    {% if settings is defined %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">用户名</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="account" autocomplete="off" required
+                value="{{ settings.account }}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">时区</label>
+        <div class="col-sm-10">
+            <input type="text" name="timezone" autocomplete="off" required value="{{ settings.timezone }}"></br>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <input class="btn btn-primary" type="submit" name="submit" value="保存">
+        </div>
+    </div>
+    {% else %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">用户名</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" name="account" autocomplete="off" required value="@用户名@实例">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">时区</label>
+        <div class="col-sm-10">
+            <input type="text" name="timezone" autocomplete="off" required value="Asia/Shanghai"></br>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <input class="btn btn-primary" type="submit" name="submit" value="保存">
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not app_init %}
+    <p> 似乎你还没有进行认证，请到这个<a href='/register'>页面</a>进行授权。</p>
+    {% endif %}
+</form>
+{% endblock %}
