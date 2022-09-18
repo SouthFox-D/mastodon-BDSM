@@ -3,7 +3,7 @@ import os
 
 from flask import render_template, request, url_for, redirect, flash
 from BDSM import app, db
-from BDSM.models import Settings, Toot
+from BDSM.models import Media, Settings, Toot
 from BDSM.toot import app_register, archive_toot
 from mastodon import Mastodon
 
@@ -16,6 +16,16 @@ def index():
     for toot in toots_.items:
         if toot.content == None:
             continue
+
+        if toot.media_list != "":
+            toot.medias = []
+            #media_list "1111,2222,333,"
+            media_list = toot.media_list[:-1].split(",")
+
+            for media_id in media_list:
+                media = Media.query.get(int(media_id))
+                if media != None:
+                    toot.medias.append(media)
 
         toots.append(toot)
 
@@ -45,11 +55,9 @@ def settings():
         return redirect(url_for('settings'))
 
     settings = Settings.query.first()
-    if settings == None:
-        flash('请输入用户名')
-        return render_template('settings.html')
-
     app_init = os.path.isfile('pyBDSM_clientcred.secret') and os.path.isfile('user.secret')
+    if settings == None:
+        flash('请输入相关设置！')
 
     return render_template('settings.html',settings=settings, app_init=app_init)
 

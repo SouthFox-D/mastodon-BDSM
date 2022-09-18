@@ -80,9 +80,9 @@ def archive_toot(url):
             content = status['content']
 
             if status['media_attachments'] != []:
-                media_list = []
+                media_list = ""
                 for media_dict in status['media_attachments']:
-                    media_list.append(media_dict['id'])
+                    media_list += str(media_dict['id']) + ","
 
                     media = Media(id=media_dict['id'], type=media_dict['type'], url=media_dict['url'],
                                   remote_url=media_dict['remote_url'], description=media_dict['description'])
@@ -91,8 +91,7 @@ def archive_toot(url):
                     #     VALUES (?,?,?,?,?)''',(media_dict['id'], media_dict['type'], media_dict['url'], \
                     #         media_dict['remote_url'], media_dict['description']))
             else:
-                media_list = []
-            media_list = str(media_list)
+                media_list = ""
 
             spoiler_text = status['spoiler_text']
 
@@ -112,10 +111,10 @@ def archive_toot(url):
                 poll_id = None
 
             if status['emojis'] != []:
-                emoji_list = []
+                emoji_list = ""
                 for emoji in status['emojis']:
                     shortcode = emoji['shortcode']
-                    emoji_list.append(shortcode)
+                    emoji_list += shortcode + ","
                     counter = ':' + shortcode + ':'
                     count = content.count(counter)
 
@@ -129,8 +128,7 @@ def archive_toot(url):
                         data.count += count
                         # cur.execute("UPDATE EMOJI SET count = ? WHERE shortcode = ?",(count, shortcode))
             else:
-                emoji_list = []
-            emoji_list = str(emoji_list)
+                emoji_list = ""
 
             if status['tags'] != []:
                 for tag in status['tags']:

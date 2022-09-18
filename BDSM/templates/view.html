@@ -23,6 +23,23 @@
             <div class="content">
                 {{ toot.content|safe }}
             </div>
+
+            <div class="toot-media">
+            <div class="row">
+        {% if toot.medias %}
+
+            {% for media in toot.medias%}
+                {% if media.type == 'image' %}
+            <div class="col-lg-6">
+                <a class="media-gallery__item-thumbnail"
+                    href="{{ media.url }}" target="_blank" rel="noopener noreferrer" data-lightbox="{{ toot.id }}" data-title="{{ media.description }}">
+                    <img src="{{ media.url }}" class="w-100 shadow-1-strong rounded" alt="{{ media.description }}"/></a>
+            </div>
+                {% endif %}
+            {% endfor%}
+        {% endif %}
+            </div>
+            </div>
             <div class="icon-bar">
                 {% if toot.replies_count > 1 %}
                 <span><i class="fa-solid fa-reply-all"></i>{{ toot.replies_count }}</span>

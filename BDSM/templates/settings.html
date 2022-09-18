@@ -3,7 +3,7 @@
 {% block content %}
 <h3>设置</h3>
 <form method="post" class="form-horizontal" role="form">
-    {% if settings is defined %}
+    {% if settings != None %}
     <div class="form-group">
         <label class="col-sm-2 control-label">用户名</label>
         <div class="col-sm-10">
