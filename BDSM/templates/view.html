@@ -5,6 +5,9 @@
     <div class="toot">
         <div class="status">
             <div class="meta">
+                {% if toot.is_reblog%}
+                <small><span>转嘟了<i class="fa-solid fa-retweet"></i></span></small>
+                {% endif %}
                 <strong><span class ="username">{{ toot.acct }}</span></strong>
                 <a href="{{ toot.url }}" target="_blank"
                     rel="noopener noreferrer">

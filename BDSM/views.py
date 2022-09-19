@@ -3,7 +3,7 @@ import os
 
 from flask import render_template, request, url_for, redirect, flash
 from BDSM import app, db
-from BDSM.models import Media, Settings, Toot, Emoji
+from BDSM.models import Media, Settings, Toot, Emoji, Reblog
 from BDSM.toot import app_register, archive_toot
 from mastodon import Mastodon
 from types import SimpleNamespace
@@ -16,8 +16,19 @@ def index():
 
     for toot_ in toots_.items:
         toot = SimpleNamespace(**toot_.__dict__)
-        if toot.content == None:
-            continue
+        print(toot.reblog_id)
+        if toot.reblog_id != None:
+            if toot.reblog_myself:
+                toot = Toot.query.get(toot.reblog_id)
+                toot = SimpleNamespace(**toot.__dict__)
+                toot.is_reblog = True
+            else:
+                print('---\n\n\n----')
+                toot = Reblog.query.get(toot.reblog_id)
+                toot = SimpleNamespace(**toot.__dict__)
+                toot.is_reblog = True
+
+        print(toot)
 
         if toot.media_list != "":
             toot.medias = []
