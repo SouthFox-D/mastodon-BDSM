@@ -16,19 +16,16 @@ def index():
 
     for toot_ in toots_.items:
         toot = SimpleNamespace(**toot_.__dict__)
-        print(toot.reblog_id)
+
         if toot.reblog_id != None:
             if toot.reblog_myself:
                 toot = Toot.query.get(toot.reblog_id)
                 toot = SimpleNamespace(**toot.__dict__)
                 toot.is_reblog = True
             else:
-                print('---\n\n\n----')
                 toot = Reblog.query.get(toot.reblog_id)
                 toot = SimpleNamespace(**toot.__dict__)
                 toot.is_reblog = True
-
-        print(toot)
 
         if toot.media_list != "":
             toot.medias = []
