@@ -120,7 +120,7 @@ def archive_toot(url):
                     count = content.count(counter)
 
                     if not is_reblog:
-                        data=Emoji.query.filter_by(shortcode=shortcode).first()
+                        data=Emoji.query.filter_by(shortcode=shortcode, acct=acct).first()
                         if data is None:
                             emoji_data = Emoji(shortcode=shortcode,
                                             acct=acct,
