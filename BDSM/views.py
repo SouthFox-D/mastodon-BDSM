@@ -3,9 +3,10 @@ import os
 
 from flask import render_template, request, url_for, redirect, flash
 from BDSM import app, db
-from BDSM.models import Media, Settings, Toot
+from BDSM.models import Media, Settings, Toot, Emoji
 from BDSM.toot import app_register, archive_toot
 from mastodon import Mastodon
+from types import SimpleNamespace
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -13,7 +14,8 @@ def index():
     toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page, per_page=50)
     toots = []
 
-    for toot in toots_.items:
+    for toot_ in toots_.items:
+        toot = SimpleNamespace(**toot_.__dict__)
         if toot.content == None:
             continue
 
@@ -26,6 +28,22 @@ def index():
                 media = Media.query.get(int(media_id))
                 if media != None:
                     toot.medias.append(media)
+
+        if toot.emoji_list != "":
+            toot.emojis = []
+            #emoji_list "blobfoxaaa,blobcatwww,fox_think,"
+            emoji_list = toot.emoji_list[:-1].split(",")
+
+            for emoji_shortcode in emoji_list:
+                emoji = Emoji.query.filter_by(shortcode=emoji_shortcode, acct=toot.acct).first()
+
+                if emoji != None:
+                    emoji_shortcode = ':' + emoji_shortcode + ':'
+                    emoji_url = emoji.url
+                    emoji_html = f'''
+                    <img class="emojione custom-emoji" alt="{emoji_shortcode}" title="{emoji_shortcode}" src="{emoji.url}" >
+                    '''
+                    toot.content = toot.content.replace(emoji_shortcode, emoji_html)
 
         toots.append(toot)
 

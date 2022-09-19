@@ -112,21 +112,34 @@ def archive_toot(url):
 
             if status['emojis'] != []:
                 emoji_list = ""
+
                 for emoji in status['emojis']:
                     shortcode = emoji['shortcode']
                     emoji_list += shortcode + ","
                     counter = ':' + shortcode + ':'
                     count = content.count(counter)
 
-                    data=Emoji.query.filter_by(shortcode=shortcode).first()
-                    if data is None:
-                        emoji_data = Emoji(shortcode=shortcode, url=emoji['url'], static_url=emoji['static_url'], count=count)
-                        db.session.add(emoji_data)
-                        # cur.execute('''INSERT INTO EMOJI (shortcode,url,static_url,count) \
-                        #     VALUES (?,?,?,?)''', (shortcode, emoji['url'], emoji['static_url'], count))
+                    if not is_reblog:
+                        data=Emoji.query.filter_by(shortcode=shortcode).first()
+                        if data is None:
+                            emoji_data = Emoji(shortcode=shortcode,
+                                            acct=acct,
+                                            url=emoji['url'],
+                                            static_url=emoji['static_url'],
+                                            count=count)
+                            db.session.add(emoji_data)
+                            # cur.execute('''INSERT INTO EMOJI (shortcode,url,static_url,count) \
+                            #     VALUES (?,?,?,?)''', (shortcode, emoji['url'], emoji['static_url'], count))
+                        else:
+                            data.count += count
+                            # cur.execute("UPDATE EMOJI SET count = ? WHERE shortcode = ?",(count, shortcode))
                     else:
-                        data.count += count
-                        # cur.execute("UPDATE EMOJI SET count = ? WHERE shortcode = ?",(count, shortcode))
+                        emoji_data = Emoji(shortcode=shortcode,
+                                        acct=acct,
+                                        url=emoji['url'],
+                                        static_url=emoji['static_url'])
+
+                        db.session.merge(emoji_data)
             else:
                 emoji_list = ""
 
@@ -169,7 +182,6 @@ def archive_toot(url):
             table.reblogs_count=reblogs_count
             table.favourites_count=favourites_count
             table.language=language
-
 
             db.session.add(table)
             # sql = f'''INSERT OR REPLACE INTO {table} (id,url,created_at,edited_at,in_reply_to_id,in_reply_to_account_id,content,\

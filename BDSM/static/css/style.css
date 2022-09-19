@@ -40,6 +40,21 @@ body {
 .pagination span {
     padding-right: 10px;
 }
+
+.emojione {
+    width: 20px;
+    height: 20px;
+    margin: -3px 0 0;
+}
+
+.emojione:hover {
+z-index: 11;
+/* Scale up 2.3 times */
+transform: scale(2.3);
+/* shadows around image edges */
+filter: drop-shadow(0 0 1px #282c37);
+}
+
 .icon-bar span {
     padding-right: 10px;
 }

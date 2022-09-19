@@ -8,6 +8,8 @@ name = "pypi"
 flask = "*"
 flask-sqlalchemy = "*"
 python-dotenv = "*"
+ptvsd = "*"
+debugpy = "*"
 
 [dev-packages]
 

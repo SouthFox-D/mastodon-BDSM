@@ -56,10 +56,12 @@ class Tag(db.Model):
     name = db.Column(db.Text)
 
 class Emoji(db.Model):
-    shortcode = db.Column(db.Text, primary_key=True)
+    __table_args__ = {'sqlite_autoincrement': True}
+    emoji_id = db.Column(db.Integer, primary_key=True)
+    shortcode = db.Column(db.Text)
+    acct = db.Column(db.Text)
     url = db.Column(db.Text)
     static_url = db.Column(db.Text)
-    name = db.Column(db.Text)
     count = db.Column(db.Integer)
 
 class Media(db.Model):
