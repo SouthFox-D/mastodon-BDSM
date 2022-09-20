@@ -24,6 +24,9 @@
                 <time>{{ toot.created_at }}</time></span></a>
             </div>
             <div class="content">
+                {% if toot.spoiler_text != "" %}
+                <strong><i>CW: {{toot.spoiler_text|safe}}</i></strong>
+                {% endif %}
                 {{ toot.content|safe }}
             </div>
 

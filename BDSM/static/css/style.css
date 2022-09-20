@@ -33,6 +33,10 @@ body {
   color: #D32F2F;
 }
 
+.content {
+    padding-top: 10px;
+}
+
 .icon-bar span {
     padding-right: 10px;
 }
