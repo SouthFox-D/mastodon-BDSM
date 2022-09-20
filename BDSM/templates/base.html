@@ -30,7 +30,11 @@
             <li><a href="{{ url_for('index') }}">主页</a></li>
             <li><a href="{{ url_for('settings') }}">设置</a></li>
             <li><a href="{{ url_for('archive') }}">存档</a></li>
-            </ul>
+        <form class="search-bar" method="post" action="{{url_for('search')}}">
+            <input type="text" name="query" placeholder="请输入搜索内容">
+            <input type="submit" value="搜索">
+        </form>
+        </ul>
         </nav>
     {% block content %}{% endblock %}
     <footer>

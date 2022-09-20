@@ -17,6 +17,12 @@ body {
   color: #606984;
 }
 
+.search-bar {
+  float: right;
+  padding: 5px;
+  display: flex;
+}
+
 .visibility-icon .fa-globle {
   color: #388E3C;
 }

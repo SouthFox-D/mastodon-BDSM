@@ -76,9 +76,10 @@
                 {% endfor %}
 
                 <div class="pagination d-flex justify-content-center">
+    {% if pagination %}
     {% if pagination.has_prev %}
         <span>
-            <a class='page-number' href="{{ url_for('index', page=pagination.prev_num) }}">
+            <a class='page-number' href="{{ url_for(path.path, page=pagination.prev_num, **path.args) }}">
                 {{ '<<<' }}
             </a>
         </span>
@@ -90,7 +91,7 @@
         {% elif pagination.page != number %}
             <span>
                     <a class='page-number'
-                        href="{{ url_for('index', page=number) }}">
+                        href="{{ url_for(path.path, page=number, **path.args) }}">
                     {{ number }}
                     </a>
             </span>
@@ -101,10 +102,11 @@
 
     {% if pagination.has_next %}
         <span>
-            <a class='page-number' href="{{ url_for('index', page=pagination.next_num) }}">
+            <a class='page-number' href="{{ url_for(path.path, page=pagination.next_num, **path.args) }}">
                 {{ '>>>' }}
             </a>
             </span>
             {% endif %}
             </div>
+    {% endif %}
             {% endblock %}

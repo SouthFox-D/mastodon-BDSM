@@ -1,61 +1,49 @@
 #!/usr/bin/env python3
 import os
+import pytz
 
 from flask import render_template, request, url_for, redirect, flash
+from flask_sqlalchemy import Pagination
 from BDSM import app, db
 from BDSM.models import Media, Settings, Toot, Emoji, Reblog
 from BDSM.toot import app_register, archive_toot
 from mastodon import Mastodon
 from types import SimpleNamespace
+from datetime import timezone
+
+@app.context_processor
+def inject_setting():
+    settings = Settings.query.first()
+    return settings.__dict__
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     page = request.args.get('page', 1, type=int)
     toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page, per_page=50)
-    toots = []
+    toots = process_toot(toots_)
+    path=SimpleNamespace()
+    path.path = "index"
+    path.args = {}
 
-    for toot_ in toots_.items:
-        toot = SimpleNamespace(**toot_.__dict__)
+    return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
-        if toot.reblog_id != None:
-            if toot.reblog_myself:
-                toot = Toot.query.get(toot.reblog_id)
-                toot = SimpleNamespace(**toot.__dict__)
-                toot.is_reblog = True
-            else:
-                toot = Reblog.query.get(toot.reblog_id)
-                toot = SimpleNamespace(**toot.__dict__)
-                toot.is_reblog = True
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        query = request.form['query']
+        return redirect(url_for('search',query=query))
 
-        if toot.media_list != "":
-            toot.medias = []
-            #media_list "1111,2222,333,"
-            media_list = toot.media_list[:-1].split(",")
+    query = request.args.get('query', "", type=str)
+    page = request.args.get('page', 1, type=int)
+    toots_ = Toot.query.order_by(Toot.created_at.desc()).filter(Toot.content.like("%"+query+"%")).paginate(page, per_page=50)
+    toots = process_toot(toots_)
+    path=SimpleNamespace()
+    # Rule: /serch
+    path.path = str(request.url_rule)[1:] #FIXME
+    path.args = {}
+    path.args["query"] = query
+    return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
-            for media_id in media_list:
-                media = Media.query.get(int(media_id))
-                if media != None:
-                    toot.medias.append(media)
-
-        if toot.emoji_list != "":
-            toot.emojis = []
-            #emoji_list "blobfoxaaa,blobcatwww,fox_think,"
-            emoji_list = toot.emoji_list[:-1].split(",")
-
-            for emoji_shortcode in emoji_list:
-                emoji = Emoji.query.filter_by(shortcode=emoji_shortcode, acct=toot.acct).first()
-
-                if emoji != None:
-                    emoji_shortcode = ':' + emoji_shortcode + ':'
-                    emoji_url = emoji.url
-                    emoji_html = f'''
-                    <img class="emojione custom-emoji" alt="{emoji_shortcode}" title="{emoji_shortcode}" src="{emoji.url}" >
-                    '''
-                    toot.content = toot.content.replace(emoji_shortcode, emoji_html)
-
-        toots.append(toot)
-
-    return render_template('view.html', toots=toots, pagination=toots_)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -134,3 +122,54 @@ def archive():
 
     flash('存档完成……大概！')
     return redirect(url_for('index'))
+
+def process_toot(toots_):
+    toots = []
+    settings = Settings.query.first()
+    user_timezone = pytz.timezone(settings.timezone)
+    fmt = '%Y-%m-%d %H:%M:%S'
+
+    for toot_ in toots_.items:
+        toot = SimpleNamespace(**toot_.__dict__)
+
+        toot.created_at = toot.created_at.replace(tzinfo=timezone.utc)
+        toot.created_at = toot.created_at.astimezone(user_timezone).strftime(fmt)
+
+        if toot.reblog_id != None:
+            if toot.reblog_myself:
+                toot = Toot.query.get(toot.reblog_id)
+                toot = SimpleNamespace(**toot.__dict__)
+                toot.is_reblog = True
+            else:
+                toot = Reblog.query.get(toot.reblog_id)
+                toot = SimpleNamespace(**toot.__dict__)
+                toot.is_reblog = True
+
+        if toot.media_list != "":
+            toot.medias = []
+            #media_list "1111,2222,333,"
+            media_list = toot.media_list[:-1].split(",")
+
+            for media_id in media_list:
+                media = Media.query.get(int(media_id))
+                if media != None:
+                    toot.medias.append(media)
+
+        if toot.emoji_list != "":
+            toot.emojis = []
+            #emoji_list "blobfoxaaa,blobcatwww,fox_think,"
+            emoji_list = toot.emoji_list[:-1].split(",")
+
+            for emoji_shortcode in emoji_list:
+                emoji = Emoji.query.filter_by(shortcode=emoji_shortcode, acct=toot.acct).first()
+
+                if emoji != None:
+                    emoji_shortcode = ':' + emoji_shortcode + ':'
+                    emoji_url = emoji.url
+                    emoji_html = f'''
+                    <img class="emojione custom-emoji" alt="{emoji_shortcode}" title="{emoji_shortcode}" src="{emoji.url}" >
+                    '''
+                    toot.content = toot.content.replace(emoji_shortcode, emoji_html)
+
+        toots.append(toot)
+    return toots
