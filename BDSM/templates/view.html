@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for toot in toots %}
+    {% for toot in toots recursive%}
     <div class="toot">
         <div class="status">
             <div class="meta">
@@ -73,7 +73,10 @@
                 </div>
                 </div>
                 </div>
-                {% endfor %}
+                    {%- if toot.reply -%}
+                    <div class="reply">{{ loop(toot.reply) }}</div>
+            {%- endif %}
+        {% endfor %}
 
                 <div class="pagination d-flex justify-content-center">
     {% if pagination %}

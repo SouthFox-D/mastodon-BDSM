@@ -11,21 +11,25 @@ from mastodon import Mastodon
 from types import SimpleNamespace
 from datetime import timezone
 
-@app.context_processor
-def inject_setting():
-    settings = Settings.query.first()
-    return settings.__dict__
+# @app.context_processor
+# def inject_setting():
+#     settings = Settings.query.first()
+#     return settings.__dict__
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    page = request.args.get('page', 1, type=int)
-    toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page, per_page=50)
-    toots = process_toot(toots_)
-    path=SimpleNamespace()
-    path.path = "index"
-    path.args = {}
+    settings = Settings.query.first()
+    if settings == None:
+        return redirect(url_for('settings'))
+    else:
+        page = request.args.get('page', 1, type=int)
+        toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page, per_page=50)
+        toots = process_toot(toots_)
+        path=SimpleNamespace()
+        path.path = "index"
+        path.args = {}
 
-    return render_template('view.html', toots=toots, pagination=toots_, path=path)
+        return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -44,6 +48,25 @@ def search():
     path.args["query"] = query
     return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
+
+@app.route('/context/<int:toot_id>', methods=['GET', 'POST'])
+def context(toot_id):
+    def get_reply(reply_id):
+        toots = Toot.query.order_by(Toot.created_at.desc()).filter_by(in_reply_to_id=reply_id).all()
+        toots = process_toot(toots)
+
+        for i in toots:
+            if i.in_reply_to_id != None:
+                i.reply = get_reply(i.id)
+
+        return toots
+
+    toot = []
+    toot.append(Toot.query.get_or_404(toot_id))
+    toot = process_toot(toot)
+    toot[0].reply = get_reply(toot_id)
+
+    return render_template('view.html', toots=toot,)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -129,7 +152,10 @@ def process_toot(toots_):
     user_timezone = pytz.timezone(settings.timezone)
     fmt = '%Y-%m-%d %H:%M:%S'
 
-    for toot_ in toots_.items:
+    if hasattr(toots_, 'items'):
+        toots_ = toots_.items
+
+    for toot_ in toots_:
         toot = SimpleNamespace(**toot_.__dict__)
 
         toot.created_at = toot.created_at.replace(tzinfo=timezone.utc)

@@ -11,6 +11,13 @@ body {
     border-top: 1px solid #393f4f;
 }
 
+.reply {
+    padding-left: 30px;
+    border-left: 3px solid;
+    border-radius: 3px 0 0 3px;
+    background: #f2f0ea;
+}
+
 .meta .time {
   float: right;
   text-decoration: underline;
