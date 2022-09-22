@@ -9,6 +9,7 @@ Mastodon Backup Data & Sqlite Management Tool
 
 `pip install mastodon.py flask flask-sqlalchemy python-dotenv` ，理论上 Python 3.6+ 版本都可使用。
 
+之后下载 `BDSM` 的代码 `git clone https://git.southfox.me/southfox/mastodon-BDSM.git` 。
 
 ## 运行
 安装完前置包后，在根目录（能看到 README.md 文件）下打开控制台：
