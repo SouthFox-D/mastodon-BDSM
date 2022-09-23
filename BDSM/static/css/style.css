@@ -72,9 +72,18 @@ transform: scale(2.3);
 filter: drop-shadow(0 0 1px #282c37);
 }
 
+.icon-bar {
+  display: block ruby;
+}
+
 .icon-bar span {
     padding-right: 10px;
 }
+
+.action-bar {
+    float: right;
+}
+
 .avatar {
     width: 40px;
 }

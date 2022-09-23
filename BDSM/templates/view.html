@@ -47,6 +47,7 @@
             </div>
             </div>
             <div class="icon-bar">
+                <div class="info-bar">
                 {% if toot.replies_count > 1 %}
                 <span><i class="fa-solid fa-reply-all"></i>{{ toot.replies_count }}</span>
                 {% else %}
@@ -70,6 +71,13 @@
                 {% else %}
                 <span><i class="fa-regular fa-bookmark"></i></span>
                 {% endif %}
+                </div>
+                <div class="action-bar">
+                    {% if not toot.is_reblog %}
+                    <span><i class="fa-solid fa-up-right-and-down-left-from-center"></i><a
+                            href="{{ url_for('context', toot_id=toot.id) }}" target=" _blank">上下文</a></span>
+                    {% endif %}
+                </div>
                 </div>
                 </div>
                 </div>

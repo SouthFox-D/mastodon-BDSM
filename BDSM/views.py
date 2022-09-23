@@ -61,12 +61,24 @@ def context(toot_id):
 
         return toots
 
-    toot = []
-    toot.append(Toot.query.get_or_404(toot_id))
-    toot = process_toot(toot)
-    toot[0].reply = get_reply(toot_id)
+    toots = []
+    toots.append(Toot.query.get_or_404(toot_id))
+    toots = process_toot(toots)
+    toots[0].reply = get_reply(toot_id)
 
-    return render_template('view.html', toots=toot,)
+    in_reply_to_id = toots[0].in_reply_to_id
+    while(in_reply_to_id != None):
+        toot = []
+        toot_ = Toot.query.get(toots[0].in_reply_to_id)
+        if toot_ == None:
+            break
+
+        toot.append(toot_)
+        toot = process_toot(toot)
+        toots.insert(0,toot[0])
+        in_reply_to_id = toot[0].in_reply_to_id
+
+    return render_template('view.html', toots=toots,)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
