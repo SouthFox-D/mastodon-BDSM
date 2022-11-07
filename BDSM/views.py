@@ -145,9 +145,6 @@ def archive():
     settings = Settings.query.first()
     if settings == None:
         return redirect(url_for('settings'))
-    elif len(Toot.query.all()) > 0:
-        flash('现暂不支持重复存档！') #TODO
-        return redirect(url_for('index'))
     else:
         account = settings.account[1:]
         username, domain = account.split("@")

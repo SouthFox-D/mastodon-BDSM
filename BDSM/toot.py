@@ -4,6 +4,7 @@ from mastodon import Mastodon
 from BDSM import db
 from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
 import sys
+import dateutil.parser
 
 def app_register(url):
     print("Registering app")
@@ -44,6 +45,7 @@ def archive_toot(url):
     # pprint(statuses)
 
     happy_counter = 20
+    duplicates_counter = 0
 
     while(True):
         for status in statuses:
@@ -61,7 +63,7 @@ def archive_toot(url):
                 created_at = status['created_at']
 
                 toot = Toot(id=id, created_at=created_at, reblog_myself=reblog_myself, reblog_id=reblog_id)
-                db.session.add(toot)
+                db.session.merge(toot)
                 # cur.execute('''INSERT OR REPLACE INTO TOOT (id,created_at,reblog_myself,reblog_id) \
                 #     VALUES (?,?,?,?)''',(id, created_at, reblog_myself, reblog_id))
 
@@ -74,7 +76,11 @@ def archive_toot(url):
             acct = status['account']['acct']
             url = status['url']
             created_at = status['created_at']
-            edited_at = status['edited_at'] if status['edited_at'] != None else None
+
+            edited_at = status['edited_at']
+            if isinstance(edited_at, str):
+                edited_at = dateutil.parser.parse(status['edited_at'])
+
             in_reply_to_id = status['in_reply_to_id']
             in_reply_to_account_id = status['in_reply_to_account_id']
             content = status['content']
@@ -86,7 +92,7 @@ def archive_toot(url):
 
                     media = Media(id=media_dict['id'], type=media_dict['type'], url=media_dict['url'],
                                   remote_url=media_dict['remote_url'], description=media_dict['description'])
-                    db.session.add(media)
+                    db.session.merge(media)
                     # cur.execute('''INSERT OR REPLACE INTO MEDIA (id,type,url,remote_url,description) \
                     #     VALUES (?,?,?,?,?)''',(media_dict['id'], media_dict['type'], media_dict['url'], \
                     #         media_dict['remote_url'], media_dict['description']))
@@ -103,7 +109,7 @@ def archive_toot(url):
 
                 poll = Poll(id=poll_dict['id'], expires_at=expires_at, multiple=poll_dict['multiple'], \
                         votes_count=poll_dict['votes_count'], options=options)
-                db.session.add(poll)
+                db.session.merge(poll)
                 # cur.execute('''INSERT OR REPLACE INTO POLL (id,expires_at,multiple,votes_count,options) \
                 #     VALUES (?,?,?,?,?)''',(poll_dict['id'], expires_at, poll_dict['multiple'], \
                 #         poll_dict['votes_count'], options))
@@ -127,7 +133,7 @@ def archive_toot(url):
                                             url=emoji['url'],
                                             static_url=emoji['static_url'],
                                             count=count)
-                            db.session.add(emoji_data)
+                            db.session.merge(emoji_data)
                             # cur.execute('''INSERT INTO EMOJI (shortcode,url,static_url,count) \
                             #     VALUES (?,?,?,?)''', (shortcode, emoji['url'], emoji['static_url'], count))
                         else:
@@ -146,7 +152,7 @@ def archive_toot(url):
             if status['tags'] != []:
                 for tag in status['tags']:
                     tag_data = Tag(id=id, name=tag['name'])
-                    db.session.add(tag_data)
+                    db.session.merge(tag_data)
                     # cur.execute('''INSERT OR REPLACE INTO TAG (id,name) \
                     #     VALUES (?,?)''',(id, tag['name']))
 
@@ -183,7 +189,10 @@ def archive_toot(url):
             table.favourites_count=favourites_count
             table.language=language
 
-            db.session.add(table)
+            if Toot.query.get(id) == None or Other.query.get(id) == None:
+                duplicates_counter += 1
+
+            db.session.merge(table)
             # sql = f'''INSERT OR REPLACE INTO {table} (id,url,created_at,edited_at,in_reply_to_id,in_reply_to_account_id,content,\
             #     media_list,spoiler_text,poll_id,emoji_list,visibility,reblogged,favourited,bookmarked,sensitive,reblogs_count,\
             #         favourites_count,language) \
@@ -194,6 +203,10 @@ def archive_toot(url):
         db.session.commit()
         print(str(happy_counter) + ' / '  + statuses_count)
         happy_counter += 20
+
+        if duplicates_counter >= 10:
+            print("检测到重复嘟文达到十次，取消存档……")
+            break
 
         statuses = mastodon.fetch_next(statuses)
         # statuses = None
