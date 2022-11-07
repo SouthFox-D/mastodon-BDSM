@@ -12,16 +12,20 @@
                 <a href="{{ toot.url }}" target="_blank"
                     rel="noopener noreferrer">
                     <span class="time">
-                {% if toot. visibility == "public"%}
+                {% if toot.visibility == "public"%}
                 <span class="visibility-icon"><i class="fa-solid fa-earth-americas fa-globle"></i></span>
-                {% elif toot. visibility == "unlisted"%}
+                {% elif toot.visibility == "unlisted"%}
                 <span class="visibility-icon"><i class="fa-solid fa-lock-open fa-unlock"></i></span>
-                {% elif toot. visibility == "private"%}
+                {% elif toot.visibility == "private"%}
                 <span class="visibility-icon"><i class="fa-solid fa-lock"></i></span>
-                {% elif toot. visibility == "direct"%}
+                {% elif toot.visibility == "direct"%}
                 <span class="visibility-icon"><i class="fa-solid fa-envelope fa-at"></i></span>
                 {% endif %}
-                <time>{{ toot.created_at }}</time></span></a>
+                <time>{{ toot.created_at }}
+                {% if toot.edited_at != None %}
+                    <strong>*</strong>
+                {% endif %}
+                </time></span></a>
             </div>
             <div class="content">
                 {% if toot.spoiler_text != "" %}
