@@ -26,7 +26,7 @@ class Toot(db.Model):
     favourites_count = db.Column(db.Integer)
     language = db.Column(db.Text)
 
-class Reblog(db.Model):
+class Other(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     acct = db.Column(db.Text)
     url = db.Column(db.Text)

@@ -5,7 +5,7 @@ import pytz
 from flask import render_template, request, url_for, redirect, flash
 from flask_sqlalchemy import Pagination
 from BDSM import app, db
-from BDSM.models import Media, Settings, Toot, Emoji, Reblog
+from BDSM.models import Media, Settings, Toot, Emoji, Other
 from BDSM.toot import app_register, archive_toot
 from mastodon import Mastodon
 from types import SimpleNamespace
@@ -179,7 +179,7 @@ def process_toot(toots_):
                 toot = SimpleNamespace(**toot.__dict__)
                 toot.is_reblog = True
             else:
-                toot = Reblog.query.get(toot.reblog_id)
+                toot = Other.query.get(toot.reblog_id)
                 toot = SimpleNamespace(**toot.__dict__)
                 toot.is_reblog = True
 

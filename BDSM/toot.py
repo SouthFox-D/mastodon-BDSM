@@ -2,7 +2,7 @@
 
 from mastodon import Mastodon
 from BDSM import db
-from BDSM.models import Reblog, Toot, Tag, Media, Emoji, Poll
+from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
 import sys
 
 def app_register(url):
@@ -160,7 +160,7 @@ def archive_toot(url):
             favourites_count = status['favourites_count']
             language = status['language']
 
-            table = Reblog() if is_reblog else Toot()
+            table = Other() if is_reblog else Toot()
             table.id=id
             table.acct = acct
             table.url=url
