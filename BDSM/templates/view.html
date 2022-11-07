@@ -77,7 +77,9 @@
                 {% endif %}
                 </div>
                 <div class="action-bar">
-                    {% if not toot.is_reblog %}
+                    {% if toot.is_myself %}
+                    <span><i class="fa-solid fa-satellite-dish"></i><a href="{{ url_for('grab', toot_id=toot.id) }}"
+                            target=" _blank">抓取回复</a></span>
                     <span><i class="fa-solid fa-up-right-and-down-left-from-center"></i><a
                             href="{{ url_for('context', toot_id=toot.id) }}" target=" _blank">上下文</a></span>
                     {% endif %}

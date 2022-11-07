@@ -6,7 +6,7 @@ from flask import render_template, request, url_for, redirect, flash
 from flask_sqlalchemy import Pagination
 from BDSM import app, db
 from BDSM.models import Media, Settings, Toot, Emoji, Other
-from BDSM.toot import app_register, archive_toot
+from BDSM.toot import app_register, archive_toot, get_context
 from mastodon import Mastodon
 from types import SimpleNamespace
 from datetime import timezone
@@ -53,7 +53,8 @@ def search():
 def context(toot_id):
     def get_reply(reply_id):
         toots = Toot.query.order_by(Toot.created_at.desc()).filter_by(in_reply_to_id=reply_id).all()
-        toots = process_toot(toots)
+        other_toots = Other.query.order_by(Other.created_at.desc()).filter_by(in_reply_to_id=reply_id).all()
+        toots = process_toot(toots) + process_toot(other_toots)
 
         for i in toots:
             if i.in_reply_to_id != None:
@@ -71,7 +72,9 @@ def context(toot_id):
         toot = []
         toot_ = Toot.query.get(toots[0].in_reply_to_id)
         if toot_ == None:
-            break
+            toot_ = Other.query.get(toots[0].in_reply_to_id)
+            if toot_ == None:
+                break
 
         toot.append(toot_)
         toot = process_toot(toot)
@@ -79,6 +82,17 @@ def context(toot_id):
         in_reply_to_id = toot[0].in_reply_to_id
 
     return render_template('view.html', toots=toots,)
+
+@app.route('/grab/<int:toot_id>', methods=['GET', 'POST'])
+def grab(toot_id):
+    settings = Settings.query.first()
+    account = settings.account[1:]
+    username, domain = account.split("@")
+    url = "https://" + domain
+
+    get_context(url, toot_id)
+    flash('抓取完成……大概！')
+    return redirect(url_for('context',toot_id=toot_id))
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -170,15 +184,19 @@ def process_toot(toots_):
         toot.created_at = toot.created_at.replace(tzinfo=timezone.utc)
         toot.created_at = toot.created_at.astimezone(user_timezone).strftime(fmt)
 
-        if toot.reblog_id != None:
-            if toot.reblog_myself:
-                toot = Toot.query.get(toot.reblog_id)
-                toot = SimpleNamespace(**toot.__dict__)
-                toot.is_reblog = True
-            else:
-                toot = Other.query.get(toot.reblog_id)
-                toot = SimpleNamespace(**toot.__dict__)
-                toot.is_reblog = True
+        if hasattr(toot, 'reblog_id'):
+            toot.is_myself = True
+            if toot.reblog_id != None:
+                if toot.reblog_myself:
+                    toot = Toot.query.get(toot.reblog_id)
+                    toot = SimpleNamespace(**toot.__dict__)
+                    toot.is_reblog = True
+                else:
+                    toot = Other.query.get(toot.reblog_id)
+                    toot = SimpleNamespace(**toot.__dict__)
+                    toot.is_reblog = True
+        else:
+            toot.is_myself = False
 
         if toot.media_list != "":
             toot.medias = []
