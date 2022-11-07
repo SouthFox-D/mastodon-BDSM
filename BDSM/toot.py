@@ -206,7 +206,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         table.favourites_count=favourites_count
         table.language=language
 
-        if Toot.query.get(id) == None or Other.query.get(id) == None:
+        if Toot.query.get(id) != None or Other.query.get(id) != None:
             duplicates_counter += 1
 
         db.session.merge(table)
