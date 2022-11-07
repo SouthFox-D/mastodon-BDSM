@@ -87,9 +87,12 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         url = status['url']
         created_at = status['created_at']
 
-        edited_at = status['edited_at']
-        if isinstance(edited_at, str):
-            edited_at = dateutil.parser.parse(status['edited_at'])
+        if 'edited_at' in status:
+            edited_at = status['edited_at']
+            if isinstance(edited_at, str):
+                edited_at = dateutil.parser.parse(status['edited_at'])
+        else:
+            edited_at = None
 
         in_reply_to_id = status['in_reply_to_id']
         in_reply_to_account_id = status['in_reply_to_account_id']
