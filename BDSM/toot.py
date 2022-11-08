@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from types import NoneType
 from mastodon import Mastodon
 from BDSM import db
 from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
@@ -140,7 +141,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
 
                 if not is_reblog:
                     data=Emoji.query.filter_by(shortcode=shortcode, acct=acct).first()
-                    if data is None:
+                    if data is None or NoneType:
                         emoji_data = Emoji(shortcode=shortcode,
                                         acct=acct,
                                         url=emoji['url'],
