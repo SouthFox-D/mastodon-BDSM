@@ -2,7 +2,7 @@
 import os
 import pytz
 
-from flask import render_template, request, url_for, redirect, flash
+from flask import render_template, request, url_for, redirect, flash, abort
 from flask_sqlalchemy import Pagination
 from BDSM import app, db
 from BDSM.models import Media, Settings, Toot, Emoji, Other
@@ -63,7 +63,14 @@ def context(toot_id):
         return toots
 
     toots = []
-    toots.append(Toot.query.get_or_404(toot_id))
+
+    toot_ = Toot.query.get(toot_id)
+    if toot_ == None:
+        toot_ = Other.query.get(toot_id)
+        if toot_ == None:
+            abort(404)
+
+    toots.append(toot_)
     toots = process_toot(toots)
     toots[0].reply = get_reply(toot_id)
 
