@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from mastodon import Mastodon
+from tenacity import *
 from BDSM import db
 from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
 import sys
@@ -221,7 +222,8 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         #     poll_id,emoji_list,visibility,reblogged,favourited,bookmarked,sensitive,reblogs_count,favourites_count,language))
     return duplicates_counter
 
-def archive_toot(url):
+# @retry(stop=stop_after_attempt(7))
+def archive_toot(url, archive_match):
     mastodon, user = app_login(url)
     acct = mastodon.me().acct
 
@@ -243,13 +245,21 @@ def archive_toot(url):
             if statuses == None:
                 break
 
-    statuses_count = str(mastodon.me().statuses_count)
-    statuses = mastodon.account_statuses(user["id"], limit=20)
-    archive(statuses)
+    skip_duplicates = False
+    if 'duplicate' in archive_match:
+        skip_duplicates = True
 
-    statuses_count = '???'
-    statuses = mastodon.favourites()
-    archive(statuses)
+    if 'statuses' in archive_match:
+        statuses_count = str(mastodon.me().statuses_count)
+        statuses = mastodon.account_statuses(user["id"], limit=20)
+        archive(statuses, skip_duplicates=skip_duplicates)
 
-    statuses = mastodon.bookmarks()
-    archive(statuses, skip_duplicates=False)
+    if 'favourites' in archive_match:
+        statuses_count = '???'
+        statuses = mastodon.favourites()
+        archive(statuses, skip_duplicates=skip_duplicates)
+
+    if 'bookmarks' in archive_match:
+        statuses_count = '???'
+        statuses = mastodon.bookmarks()
+        archive(statuses, skip_duplicates=skip_duplicates)

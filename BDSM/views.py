@@ -23,7 +23,7 @@ def index():
         return redirect(url_for('settings'))
     else:
         page = request.args.get('page', 1, type=int)
-        toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page, per_page=50)
+        toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page=page, per_page=50)
         toots = process_toot(toots_)
         path=SimpleNamespace()
         path.path = "index"
@@ -39,7 +39,8 @@ def search():
 
     query = request.args.get('query', "", type=str)
     page = request.args.get('page', 1, type=int)
-    toots_ = Toot.query.order_by(Toot.created_at.desc()).filter(Toot.content.like("%"+query+"%")).paginate(page, per_page=50)
+    toots_ = Toot.query.order_by(Toot.created_at.desc()).filter(Toot.content.like("%"+query+"%")).paginate(
+        page=page, per_page=50)
     toots = process_toot(toots_)
     path=SimpleNamespace()
     # Rule: /serch
@@ -164,17 +165,20 @@ def register():
 @app.route('/archive', methods=['GET', 'POST'])
 def archive():
     settings = Settings.query.first()
-    if settings == None:
-        return redirect(url_for('settings'))
-    else:
+    if request.method == 'POST':
+        archive_match = request.form.getlist("archive_match")
         account = settings.account[1:]
         username, domain = account.split("@")
         url = "https://" + domain
+        archive_toot(url, archive_match)
 
-        archive_toot(url)
+        flash('存档完成……大概！')
+        return redirect(url_for('index'))
 
-    flash('存档完成……大概！')
-    return redirect(url_for('index'))
+    if settings == None:
+        return redirect(url_for('settings'))
+    else:
+        return render_template('archive.html')
 
 def process_toot(toots_):
     toots = []

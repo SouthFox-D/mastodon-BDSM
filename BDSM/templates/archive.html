@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>存档</h3>
+<form method="post" class="form-horizontal" role="form">
+    <div class="form-group">
+        <input type="checkbox" name="archive_match" value="statuses" checked> 嘟文
+        <input type="checkbox" name="archive_match" value="favourites" checked> 喜欢
+        <input type="checkbox" name="archive_match" value="bookmarks" checked> 书签
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="archive_match" value="duplicate" checked> 增量备份
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <p>1. 增量备份是指如果检查到数据库已存在嘟文超过十个就停止存档，即只存最新的。</p>
+            <p>2. 也因为现在嘟文、喜欢、收藏的数据全部存放在一起，所以可能导致增量备份逻辑混乱，
+                建议对每一个栏目来一次全量备份（即不勾选增量备份框）。</p>
+            <p>3. 目前没有做网页进度条，请前往终端（控制台）查看进度。</p>
+            <input class="btn btn-primary" type="submit" name="submit" value="存档！">
+        </div>
+    </div>
+
+{% endblock %}
