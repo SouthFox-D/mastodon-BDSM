@@ -222,7 +222,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         #     poll_id,emoji_list,visibility,reblogged,favourited,bookmarked,sensitive,reblogs_count,favourites_count,language))
     return duplicates_counter
 
-# @retry(stop=stop_after_attempt(7))
+
 def archive_toot(url, archive_match):
     mastodon, user = app_login(url)
     acct = mastodon.me().acct
@@ -240,7 +240,11 @@ def archive_toot(url, archive_match):
                 print("检测到重复嘟文达到十次，取消存档……")
                 break
 
-            statuses = mastodon.fetch_next(statuses)
+            @retry(stop=stop_after_attempt(5))
+            def archive_retry():
+                return mastodon.fetch_next(statuses)
+
+            statuses = archive_retry()
 
             if statuses == None:
                 break
