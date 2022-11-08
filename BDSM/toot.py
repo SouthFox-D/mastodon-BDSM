@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from types import NoneType
 from mastodon import Mastodon
 from BDSM import db
 from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
@@ -141,7 +140,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
 
                 if not is_reblog:
                     data=Emoji.query.filter_by(shortcode=shortcode, acct=acct).first()
-                    if data is None or NoneType:
+                    if data == None:
                         emoji_data = Emoji(shortcode=shortcode,
                                         acct=acct,
                                         url=emoji['url'],
@@ -151,7 +150,10 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
                         # cur.execute('''INSERT INTO EMOJI (shortcode,url,static_url,count) \
                         #     VALUES (?,?,?,?)''', (shortcode, emoji['url'], emoji['static_url'], count))
                     else:
-                        data.count += count
+                        if data.count == None:
+                            data.count = count
+                        else:
+                            data.count += count
                         # cur.execute("UPDATE EMOJI SET count = ? WHERE shortcode = ?",(count, shortcode))
                 else:
                     emoji_data = Emoji(shortcode=shortcode,
