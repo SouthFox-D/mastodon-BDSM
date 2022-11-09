@@ -5,14 +5,12 @@ Mastodon Backup Data & Sqlite Management Tool
 简称  Mastodon BDSM Tool 。
 
 ## 安装
-用到了以下包
+克隆 `BDSM` 的代码 `git clone https://git.southfox.me/southfox/mastodon-BDSM.git` 或是直接访问 `https://git.southfox.me/southfox/mastodon-BDSM/archive/master.zip` 下载。
 
-`pip install mastodon.py flask flask-sqlalchemy python-dotenv` ，理论上 Python 3.6+ 版本都可使用。
-
-之后下载 `BDSM` 的代码 `git clone https://git.southfox.me/southfox/mastodon-BDSM.git` 。
+然后进入文件夹，在根目录（能看到 README.md 文件）下打开控制台，安装前置包 `pip install -r requirements.txt` ，理论上 Python 3.7+ 版本都可使用。推荐使用 `pipenv` 或 `venv` 等虚拟环境管理器进行安装。
 
 ## 运行
-安装完前置包后，在根目录（能看到 README.md 文件）下打开控制台：
+安装完前置包后，在控制台下输入：
 
 - `flask initdb` 初始化数据库
 
