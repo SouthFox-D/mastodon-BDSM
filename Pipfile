@@ -8,8 +8,6 @@ name = "pypi"
 flask = "*"
 flask-sqlalchemy = ">3.0.0"
 python-dotenv = "*"
-ptvsd = "*"
-debugpy = "*"
 tenacity = "*"
 
 [dev-packages]
