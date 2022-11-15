@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import os
 import pytz
+import json
 
 from flask import render_template, request, url_for, redirect, flash, abort
 from flask_sqlalchemy import Pagination
 from BDSM import app, db
-from BDSM.models import Media, Settings, Toot, Emoji, Other
+from BDSM.models import Media, Poll, Settings, Toot, Emoji, Other
 from BDSM.toot import app_register, archive_toot, get_context
 from mastodon import Mastodon
 from types import SimpleNamespace
@@ -234,6 +235,17 @@ def process_toot(toots_):
                     <img class="emojione custom-emoji" alt="{emoji_shortcode}" title="{emoji_shortcode}" src="{emoji.url}" >
                     '''
                     toot.content = toot.content.replace(emoji_shortcode, emoji_html)
+
+        if toot.poll_id != None:
+           poll = Poll.query.get(toot.poll_id)
+           poll_options = json.loads(poll.options.replace("\'", "\""))
+           poll_count = str(poll.votes_count)
+           poll_content = '<strong>总票数： ' + poll_count + '</strong><br>'
+
+           for i in poll_options:
+               poll_content += i['title'] + " / " + str(i['votes_count']) + '<br>'
+
+           toot.content += poll_content
 
         toots.append(toot)
     return toots
