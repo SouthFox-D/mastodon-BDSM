@@ -34,6 +34,15 @@ def renderfile():
                 font-size: 14px;
                 font-family: Helvetica, Arial, sans-serif;
             }
+            @media screen and (max-width:720px){
+                body {
+                    margin: auto !important;
+                    padding: 5px;
+                    max-width: 580px;
+                    font-size: 14px;
+                    font-family: Helvetica, Arial, sans-serif;
+                }
+            }
             .toot {
                 padding-top: 10px;
                 padding-bottom: 10px;
@@ -41,7 +50,7 @@ def renderfile():
             .status {
                 border: 1px solid #393f4f;
             }
-            .toot-media{
+            .toot-media {
                 width: 100%;
             }
             .meta .time {
