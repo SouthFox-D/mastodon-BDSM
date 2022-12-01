@@ -1,0 +1,80 @@
+{% for toot in toots recursive%}
+    <div class="toot">
+        <div class="status">
+            <div class="meta">
+                {% if toot.is_reblog%}
+                <small><span>转嘟了<i class="fa-solid fa-retweet"></i></span></small>
+                {% endif %}
+                <strong><span class ="username">{{ toot.acct }}</span></strong>
+                <a href="{{ toot.url }}" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="time">
+                {% if toot.visibility == "public"%}
+                <span class="visibility-icon">🌐</span>
+                {% elif toot.visibility == "unlisted"%}
+                <span class="visibility-icon">🔓</span>
+                {% elif toot.visibility == "private"%}
+                <span class="visibility-icon">🔒</span>
+                {% elif toot.visibility == "direct"%}
+                <span class="visibility-icon">✉️</i></span>
+                {% endif %}
+                <time>{{ toot.created_at }}
+                {% if toot.edited_at != None %}
+                    <strong>*</strong>
+                {% endif %}
+                </time></span></a>
+            </div>
+            <div class="content">
+                {% if toot.spoiler_text != "" %}
+                <strong><i>CW: {{toot.spoiler_text|safe}}</i></strong>
+                {% endif %}
+                {{ toot.content|safe }}
+            </div>
+
+            <div class="toot-media">
+            <div class="row">
+        {% if toot.medias %}
+
+            {% for media in toot.medias%}
+                {% if media.type == 'image' %}
+            <div class="col-lg-6">
+                <a class="media-gallery__item-thumbnail"
+                    href="{{ media.url }}" target="_blank" rel="noopener noreferrer" data-lightbox="{{ toot.id }}" data-title="{{ media.description }}">
+                    <img src="{{ media.url }}" class="toot-media" alt="{{ media.description }}"/></a>
+            </div>
+                {% endif %}
+            {% endfor%}
+        {% endif %}
+            </div>
+            </div>
+            <div class="icon-bar">
+                <div class="info-bar">
+                {% if toot.replies_count %}
+                    <span>↩️ {{ toot.replies_count }}</span>
+                {% else %}
+                    <span>↩️ {{ toot.replies_count }}</span>
+                {% endif %}
+
+                {% if toot.reblogged %}
+                    <span>🔄 {{ toot.reblogs_count}}</span>
+                {% else %}
+                    <span>🔄 {{ toot.reblogs_count}}</span>
+                {% endif %}
+
+                {% if toot.favourited %}
+                    <span>⭐ {{ toot.favourites_count }}</span>
+                {% else %}
+                    <span>⭐ {{ toot.favourites_count }}</span>
+                {% endif %}
+
+                {% if toot.bookmarked %}
+                    <span>🔖</span>
+                {% endif %}
+                </div>
+                </div>
+                </div>
+                </div>
+                    {%- if toot.reply -%}
+                    <div class="reply">{{ loop(toot.reply) }}</div>
+            {%- endif %}
+{% endfor %}

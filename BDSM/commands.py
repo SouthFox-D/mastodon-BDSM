@@ -17,6 +17,88 @@ def initdb(drop):
     click.echo('Initialized database.')
 
 @app.cli.command()
+def renderfile():
+    """render toot"""
+    from BDSM.models import Toot
+    from BDSM.views import process_toot
+    from jinja2 import Environment, FileSystemLoader
+
+    head = '''<!Doctype html>
+    <html>
+    <head>
+        <style>
+            body {
+                margin: auto !important;
+                padding: 5px;
+                max-width: 580px;
+                font-size: 14px;
+                font-family: Helvetica, Arial, sans-serif;
+            }
+            .toot {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+            .status {
+                border: 1px solid #393f4f;
+            }
+            .toot-media{
+                width: 100%;
+            }
+            .meta .time {
+                float: right;
+                text-decoration: underline;
+                color: #606984;
+            }
+            .emojione {
+                width: 20px;
+                height: 20px;
+                margin: -3px 0 0;
+            }
+            .emojione:hover {
+                z-index: 11;
+                /* Scale up 2.3 times */
+                transform: scale(2.3);
+                /* shadows around image edges */
+                filter: drop-shadow(0 0 1px #282c37);
+            }
+            .icon-bar {
+                display: block ruby;
+            }
+            .icon-bar span {
+                padding-right: 10px;
+            }
+
+        </style>
+    </head>
+    </body>
+    '''
+    def render_toot(toot_id):
+        _toot = []
+        toot = Toot.query.get(toot_id)
+
+        if toot == None:
+            return "None"
+
+        _toot.append(toot)
+        _toot = process_toot(_toot)
+        env = Environment(loader=FileSystemLoader("./BDSM/templates"))
+        jinja_template = env.get_template("toot.html")
+        template_string = jinja_template.render(toots=_toot)
+        return template_string
+
+    def _render(input_file):
+        env = Environment(loader=FileSystemLoader("./"))
+        jinja_template = env.get_template(input_file)
+        jinja_template.globals.update(render_toot=render_toot)
+        template_string = jinja_template.render()
+
+        with open('./output.html', 'w') as f:
+            f.write(head + template_string + '</body></html>')
+
+    _render("input.txt")
+    print("Done?")
+
+@app.cli.command()
 def graball():
     """Grab all toots context"""
     settings = Settings.query.first()
