@@ -26,6 +26,7 @@ def renderfile():
     head = '''<!Doctype html>
     <html>
     <head>
+        <meta charset="utf-8">
         <style>
             body {
                 margin: auto !important;
