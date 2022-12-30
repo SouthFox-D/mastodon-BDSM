@@ -17,6 +17,86 @@ def initdb(drop):
     click.echo('Initialized database.')
 
 @app.cli.command()
+def analysis():
+    """Analysis current Year"""
+    from BDSM.models import Toot, Other
+    from sqlalchemy.sql import extract
+    from sqlalchemy import func
+    from sqlalchemy import desc
+    from . import db
+    from wordcloud import WordCloud
+    from PIL import Image
+    import numpy as np
+    import jieba
+    import re
+
+    year_toots = Toot.query.filter(extract('year', Toot.created_at) == 2022)
+    print("2022 总计嘟文" + str(len(year_toots.all())))
+    print("2022 年发言最多天数排名" +
+        str(db.session.query(func.strftime("%Y-%m-%d", Toot.created_at
+                                ).label('date'),func.count('date')
+                                ).filter(extract('year', Toot.created_at) == 2022
+                                ).group_by('date'
+                                ).order_by(desc(func.count('date'))
+                                ).all()[:3])
+    )
+
+    print("2022 年互动最多帐号排名" +
+        str(db.session.query(Other.acct.label('count'),func.count('count')
+                                ).filter(extract('year', Other.created_at) == 2022
+                                ).group_by('count'
+                                ).order_by(desc(func.count('count'))
+                                ).all()[:3])
+    )
+
+    toots_counter = 0
+    public_counter = 0
+    toots_content = ''
+
+    html_pattern = re.compile(r'<[^>]+>',re.S)
+    url_pattern = re.compile(r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)',re.S)
+    emoji_pattern = re.compile(r':+?[a-zA-Z0-9_]+:',re.S)
+    at_pattern = re.compile(r'@+?[a-zA-Z0-9\._]+ ',re.S)
+    mask = np.array(Image.open("misc/mask.png"))
+
+    for i in year_toots:
+        if i.content != None:
+            toot_content = html_pattern.sub('', i.content)
+            toot_content = url_pattern.sub('', toot_content)
+            toot_content = emoji_pattern.sub('', toot_content)
+            toot_content = at_pattern.sub('', toot_content)
+            toots_content += toot_content
+
+            toots_counter += 1
+            if i.visibility == 'public':
+                public_counter += 1
+
+    print("2022 实际有内容嘟文数量：" + str(toots_counter))
+    print("2022 公开嘟文数量" + str(public_counter))
+
+    jieba.load_userdict(r'misc/user_dict.txt')
+    wordlist = jieba.lcut(toots_content)
+    space_list = ' '.join(wordlist)
+    stopwords = set()
+    content = [line.strip() for line in open('misc/stopwords.txt','r').readlines()]
+    stopwords.update(content)
+
+    wc = WordCloud(width=1400, height=2200,
+                    background_color='white',
+                    mask=mask,
+                    stopwords=stopwords,
+                    mode='RGB',
+                    max_words=500,
+                    max_font_size=150,
+                    #relative_scaling=0.6,
+                    font_path="/usr/share/fonts/noto-cjk/NotoSerifCJK-Regular.ttc",
+                    random_state=50,
+                    scale=2
+                ).generate(space_list)
+    wc.to_file("output.png")
+    print(" 词图统计已生成在根目录，名字为 output.png")
+
+@app.cli.command()
 def renderfile():
     """render toot"""
     from BDSM.models import Toot

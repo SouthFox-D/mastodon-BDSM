@@ -9,6 +9,9 @@ flask = "*"
 flask-sqlalchemy = ">3.0.0"
 python-dotenv = "*"
 tenacity = "*"
+jieba = "*"
+wordcloud = "*"
+numpy = "*"
 
 [dev-packages]
 
