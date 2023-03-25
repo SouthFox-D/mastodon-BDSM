@@ -5,9 +5,10 @@ import json
 
 from flask import render_template, request, url_for, redirect, flash, abort
 from flask_sqlalchemy import Pagination
+from sqlalchemy import or_
 from BDSM import app, db
-from BDSM.models import Media, Poll, Settings, Toot, Emoji, Other
-from BDSM.toot import app_register, archive_toot, get_context
+from BDSM.models import Media, Poll, Settings, Toot, Emoji
+from BDSM.toot import app_login, app_register, archive_toot, get_context
 from mastodon import Mastodon
 from types import SimpleNamespace
 from datetime import timezone
@@ -24,10 +25,40 @@ def index():
         return redirect(url_for('settings'))
     else:
         page = request.args.get('page', 1, type=int)
-        toots_ = Toot.query.order_by(Toot.created_at.desc()).paginate(page=page, per_page=50)
+        toots_ = Toot.query.order_by(Toot.created_at.desc()).filter(or_(Toot.acct==settings.account, Toot.reblog_id!=None)).paginate(page=page, per_page=50)
         toots = process_toot(toots_)
         path=SimpleNamespace()
         path.path = "index"
+        path.args = {}
+
+        return render_template('view.html', toots=toots, pagination=toots_, path=path)
+
+@app.route('/favourited', methods=['GET', 'POST'])
+def favourited():
+    settings = Settings.query.first()
+    if settings == None:
+        return redirect(url_for('settings'))
+    else:
+        page = request.args.get('page', 1, type=int)
+        toots_ = Toot.query.order_by(Toot.created_at.desc()).filter_by(favourited=True).paginate(page=page, per_page=50)
+        toots = process_toot(toots_)
+        path=SimpleNamespace()
+        path.path = "favourited"
+        path.args = {}
+
+        return render_template('view.html', toots=toots, pagination=toots_, path=path)
+
+@app.route('/bookmarked', methods=['GET', 'POST'])
+def bookmarked():
+    settings = Settings.query.first()
+    if settings == None:
+        return redirect(url_for('settings'))
+    else:
+        page = request.args.get('page', 1, type=int)
+        toots_ = Toot.query.order_by(Toot.created_at.desc()).filter_by(bookmarked=True).paginate(page=page, per_page=50)
+        toots = process_toot(toots_)
+        path=SimpleNamespace()
+        path.path = "bookmarked"
         path.args = {}
 
         return render_template('view.html', toots=toots, pagination=toots_, path=path)
@@ -55,8 +86,6 @@ def search():
 def context(toot_id):
     def get_reply(reply_id):
         toots = Toot.query.order_by(Toot.created_at.desc()).filter_by(in_reply_to_id=reply_id).all()
-        other_toots = Other.query.order_by(Other.created_at.desc()).filter_by(in_reply_to_id=reply_id).all()
-        toots = process_toot(toots) + process_toot(other_toots)
 
         for i in toots:
             if i.in_reply_to_id != None:
@@ -68,9 +97,7 @@ def context(toot_id):
 
     toot_ = Toot.query.get(toot_id)
     if toot_ == None:
-        toot_ = Other.query.get(toot_id)
-        if toot_ == None:
-            abort(404)
+        abort(404)
 
     toots.append(toot_)
     toots = process_toot(toots)
@@ -81,9 +108,7 @@ def context(toot_id):
         toot = []
         toot_ = Toot.query.get(toots[0].in_reply_to_id)
         if toot_ == None:
-            toot_ = Other.query.get(toots[0].in_reply_to_id)
-            if toot_ == None:
-                break
+            break
 
         toot.append(toot_)
         toot = process_toot(toot)
@@ -95,8 +120,7 @@ def context(toot_id):
 @app.route('/grab/<int:toot_id>', methods=['GET', 'POST'])
 def grab(toot_id):
     settings = Settings.query.first()
-    account = settings.account[1:]
-    username, domain = account.split("@")
+    domain = settings.domain
     url = "https://" + domain
 
     get_context(url, toot_id)
@@ -106,20 +130,18 @@ def grab(toot_id):
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
-        account = request.form['account']
         timezone = request.form['timezone']
-
-        if not account or len(account) > 30:
-            flash('无效输入')
-            return redirect(url_for('settings'))
-
         settings = Settings.query.first()
-
         if settings == None:
-            settings = Settings(account=account, timezone=timezone)
+            domain = request.form['domain']
+
+            if not domain or len(domain) > 50:
+                flash('无效输入')
+                return redirect(url_for('settings'))
+
+            settings = Settings(domain=domain, timezone=timezone)
             db.session.add(settings)
         else:
-            settings.account = account
             settings.timezone = timezone
 
         db.session.commit()
@@ -137,12 +159,16 @@ def settings():
 def register():
     settings = Settings.query.first()
     if settings == None:
-        flash('请先输入用户名！')
+        flash('请先输入站点地址！')
         return redirect(url_for('settings'))
     else:
-        account = settings.account[1:]
-        username, domain = account.split("@")
+        domain = settings.domain
         url = "https://" + domain
+
+        mastodon, _ = app_login(url)
+        account = mastodon.me().acct
+        settings.account = account
+        db.session.commit()
 
         if request.method == 'POST':
             token = request.form['token'].rstrip()
@@ -168,8 +194,7 @@ def archive():
     settings = Settings.query.first()
     if request.method == 'POST':
         archive_match = request.form.getlist("archive_match")
-        account = settings.account[1:]
-        username, domain = account.split("@")
+        domain = settings.domain
         url = "https://" + domain
         archive_toot(url, archive_match)
 
@@ -196,19 +221,15 @@ def process_toot(toots_):
         toot.created_at = toot.created_at.replace(tzinfo=timezone.utc)
         toot.created_at = toot.created_at.astimezone(user_timezone).strftime(fmt)
 
-        if hasattr(toot, 'reblog_id'):
+        if toot.acct == settings.account:
             toot.is_myself = True
-            if toot.reblog_id != None:
-                if toot.reblog_myself:
-                    toot = Toot.query.get(toot.reblog_id)
-                    toot = SimpleNamespace(**toot.__dict__)
-                    toot.is_reblog = True
-                else:
-                    toot = Other.query.get(toot.reblog_id)
-                    toot = SimpleNamespace(**toot.__dict__)
-                    toot.is_reblog = True
         else:
             toot.is_myself = False
+
+        if toot.reblog_id != None:
+            toot = Toot.query.get(toot.reblog_id)
+            toot = SimpleNamespace(**toot.__dict__)
+            toot.is_reblog = True
 
         if toot.media_list != "":
             toot.medias = []

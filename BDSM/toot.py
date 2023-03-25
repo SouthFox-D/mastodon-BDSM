@@ -3,7 +3,7 @@
 from mastodon import Mastodon
 from tenacity import *
 from BDSM import db
-from BDSM.models import Other, Toot, Tag, Media, Emoji, Poll
+from BDSM.models import Toot, Tag, Media, Emoji, Poll, Settings
 import sys
 import dateutil.parser
 
@@ -40,8 +40,9 @@ def app_login(url):
     return mastodon, user
 
 def get_context(url, toot_id):
-    mastodon, user = app_login(url)
-    acct = mastodon.me().acct
+    mastodon, _ = app_login(url)
+    settings = Settings.query.first()
+    acct = settings.account
     context = mastodon.status_context(toot_id)
     statuses = []
     statuses= context['ancestors'] + context['descendants']
@@ -52,7 +53,6 @@ def get_context(url, toot_id):
 def toot_process(statuses, my_acct, duplicates_counter=0):
     for status in statuses:
         is_reblog = False
-        is_myself = False
         if status['reblog'] != None:
             if my_acct == status['reblog']['account']['acct']:
                 reblog_myself = True
@@ -78,11 +78,6 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         id = status['id']
 
         acct = status['account']['acct']
-        if my_acct == acct:
-            is_myself = True
-        else:
-            is_myself = False
-
         url = status['url']
         created_at = status['created_at']
 
@@ -181,10 +176,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         favourites_count = status['favourites_count']
         language = status['language']
 
-        if is_reblog or not is_myself:
-            table = Other()
-        else:
-            table = Toot()
+        table = Toot()
 
         table.id=id
         table.acct = acct
@@ -208,7 +200,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         table.favourites_count=favourites_count
         table.language=language
 
-        if Toot.query.get(id) != None or Other.query.get(id) != None:
+        if Toot.query.get(id) != None:
             duplicates_counter += 1
 
         db.session.merge(table)

@@ -26,29 +26,6 @@ class Toot(db.Model):
     favourites_count = db.Column(db.Integer)
     language = db.Column(db.Text)
 
-class Other(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    acct = db.Column(db.Text)
-    url = db.Column(db.Text)
-    created_at = db.Column(db.DateTime)
-    edited_at = db.Column(db.DateTime)
-    in_reply_to_id = db.Column(db.Integer)
-    in_reply_to_account_id = db.Column(db.Integer)
-    content = db.Column(db.Text)
-    media_list = db.Column(db.Text)
-    emoji_list = db.Column(db.Text)
-    spoiler_text = db.Column(db.Text)
-    poll_id = db.Column(db.Integer)
-    visibility  = db.Column(db.Text)
-    reblogged  = db.Column(db.Boolean)
-    favourited = db.Column(db.Boolean)
-    bookmarked = db.Column(db.Boolean)
-    sensitive = db.Column(db.Boolean)
-    replies_count = db.Column(db.Integer)
-    reblogs_count = db.Column(db.Integer)
-    favourites_count = db.Column(db.Integer)
-    language = db.Column(db.Text)
-
 class Tag(db.Model):
     __table_args__ = {'sqlite_autoincrement': True}
     tag_id = db.Column(db.Integer, primary_key=True)
@@ -79,6 +56,7 @@ class Poll(db.Model):
     options = db.Column(db.Text)
 
 class Settings(db.Model):
-    account = db.Column(db.Text, primary_key=True)
+    domain = db.Column(db.Text, primary_key=True)
+    account = db.Column(db.Text)
     timezone = db.Column(db.Text)
     setup = db.Column(db.Boolean)
