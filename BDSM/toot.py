@@ -218,9 +218,14 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
     return duplicates_counter
 
 
-def archive_toot(url, archive_match):
+def archive_toot(url, archive_args):
     mastodon, user = app_login(url)
     acct = mastodon.me().acct
+    skip_duplicates = False
+
+    @retry(stop=stop_after_attempt(5))
+    def fetch_next_statuses():
+        return mastodon.fetch_next(statuses)
 
     def archive(statuses, skip_duplicates=True):
         happy_counter = 20
@@ -235,30 +240,24 @@ def archive_toot(url, archive_match):
                 print("检测到重复嘟文达到十次，取消存档……")
                 break
 
-            @retry(stop=stop_after_attempt(5))
-            def archive_retry():
-                return mastodon.fetch_next(statuses)
-
-            statuses = archive_retry()
-
+            statuses = fetch_next_statuses()
             if statuses == None:
                 break
 
-    skip_duplicates = False
-    if 'duplicate' in archive_match:
+    if 'duplicate' in archive_args:
         skip_duplicates = True
 
-    if 'statuses' in archive_match:
+    if 'statuses' in archive_args:
         statuses_count = str(mastodon.me().statuses_count)
         statuses = mastodon.account_statuses(user["id"], limit=20)
         archive(statuses, skip_duplicates=skip_duplicates)
 
-    if 'favourites' in archive_match:
+    if 'favourites' in archive_args:
         statuses_count = '???'
         statuses = mastodon.favourites()
         archive(statuses, skip_duplicates=skip_duplicates)
 
-    if 'bookmarks' in archive_match:
+    if 'bookmarks' in archive_args:
         statuses_count = '???'
         statuses = mastodon.bookmarks()
         archive(statuses, skip_duplicates=skip_duplicates)
