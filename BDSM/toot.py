@@ -12,13 +12,13 @@ def app_register(url):
     Mastodon.create_app(
         'pyBDSM',
         api_base_url = url,
-        to_file = 'pyBDSM_clientcred.secret',
+        to_file = 'data/pyBDSM_clientcred.secret',
         scopes=["read"]
     )
 
 def app_login(url):
     mastodon = Mastodon(
-        client_id='pyBDSM_clientcred.secret',
+        client_id='data/pyBDSM_clientcred.secret',
         access_token='user.secret',
         api_base_url=url
     )
