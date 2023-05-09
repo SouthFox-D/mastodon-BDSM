@@ -7,6 +7,8 @@ from BDSM.models import Toot, Tag, Media, Emoji, Poll, Settings
 import sys
 import dateutil.parser
 
+
+
 def app_register(url):
     print("Registering app")
     Mastodon.create_app(
@@ -15,6 +17,7 @@ def app_register(url):
         to_file = 'data/pyBDSM_clientcred.secret',
         scopes=["read"]
     )
+
 
 def app_login(url):
     mastodon = Mastodon(
@@ -39,6 +42,7 @@ def app_login(url):
 
     return mastodon, user
 
+
 def get_context(url, toot_id):
     mastodon, _ = app_login(url)
     settings = Settings.query.first()
@@ -49,6 +53,7 @@ def get_context(url, toot_id):
     toot_process(statuses, acct)
 
     db.session.commit()
+
 
 def toot_process(statuses, my_acct, duplicates_counter=0):
     for status in statuses:
@@ -211,6 +216,7 @@ def toot_process(statuses, my_acct, duplicates_counter=0):
         # cur.execute(sql,(id,url,created_at,edited_at,in_reply_to_id,in_reply_to_account_id,content,media_list,spoiler_text,\
         #     poll_id,emoji_list,visibility,reblogged,favourited,bookmarked,sensitive,reblogs_count,favourites_count,language))
     return duplicates_counter
+
 
 def archive_toot(url, archive_match):
     mastodon, user = app_login(url)

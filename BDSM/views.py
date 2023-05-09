@@ -13,10 +13,13 @@ from mastodon import Mastodon
 from types import SimpleNamespace
 from datetime import timezone
 
+
+
 # @app.context_processor
 # def inject_setting():
 #     settings = Settings.query.first()
 #     return settings.__dict__
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -33,6 +36,7 @@ def index():
 
         return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
+
 @app.route('/favourited', methods=['GET', 'POST'])
 def favourited():
     settings = Settings.query.first()
@@ -48,6 +52,7 @@ def favourited():
 
         return render_template('view.html', toots=toots, pagination=toots_, path=path)
 
+
 @app.route('/bookmarked', methods=['GET', 'POST'])
 def bookmarked():
     settings = Settings.query.first()
@@ -62,6 +67,7 @@ def bookmarked():
         path.args = {}
 
         return render_template('view.html', toots=toots, pagination=toots_, path=path)
+
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -117,6 +123,7 @@ def context(toot_id):
 
     return render_template('view.html', toots=toots,)
 
+
 @app.route('/grab/<int:toot_id>', methods=['GET', 'POST'])
 def grab(toot_id):
     settings = Settings.query.first()
@@ -126,6 +133,7 @@ def grab(toot_id):
     get_context(url, toot_id)
     flash('抓取完成……大概！')
     return redirect(url_for('context',toot_id=toot_id))
+
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -154,6 +162,7 @@ def settings():
         flash('请输入相关设置！')
 
     return render_template('settings.html',settings=settings, app_init=app_init)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -189,6 +198,7 @@ def register():
         flash('已授权过！')
         return redirect(url_for('settings'))
 
+
 @app.route('/archive', methods=['GET', 'POST'])
 def archive():
     settings = Settings.query.first()
@@ -205,6 +215,7 @@ def archive():
         return redirect(url_for('settings'))
     else:
         return render_template('archive.html')
+
 
 def process_toot(toots_):
     toots = []
@@ -251,7 +262,7 @@ def process_toot(toots_):
 
                 if emoji != None:
                     emoji_shortcode = ':' + emoji_shortcode + ':'
-                    emoji_url = emoji.url
+                    # emoji_url = emoji.url
                     emoji_html = f'''
                     <img class="emojione custom-emoji" alt="{emoji_shortcode}" title="{emoji_shortcode}" src="{emoji.url}" >
                     '''
@@ -269,4 +280,5 @@ def process_toot(toots_):
            toot.content += poll_content
 
         toots.append(toot)
+
     return toots
