@@ -33,5 +33,5 @@ tenacity==8.1.0
 typing_extensions==4.4.0
 urllib3==1.26.13
 Werkzeug==2.2.2
-wordcloud==1.8.2.2
+wordcloud==1.9.1.1
 zipp==3.10.0
