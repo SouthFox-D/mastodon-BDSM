@@ -224,7 +224,7 @@ def archive_toot(url, archive_args):
     skip_duplicates = False
 
     @retry(stop=stop_after_attempt(5))
-    def fetch_next_statuses():
+    def fetch_next_statuses(statuses ):
         return mastodon.fetch_next(statuses)
 
     def archive(statuses, skip_duplicates=True):
@@ -240,7 +240,7 @@ def archive_toot(url, archive_args):
                 print("检测到重复嘟文达到十次，取消存档……")
                 break
 
-            statuses = fetch_next_statuses()
+            statuses = fetch_next_statuses(statuses )
             if statuses == None:
                 break
 
