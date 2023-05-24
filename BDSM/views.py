@@ -12,6 +12,7 @@ from BDSM.toot import app_login, app_register, archive_toot, get_context
 from mastodon import Mastodon
 from types import SimpleNamespace
 from datetime import timezone
+from typing import Any
 
 
 
@@ -157,46 +158,45 @@ def settings():
         return redirect(url_for('settings'))
 
     settings = Settings.query.first()
-    app_init = os.path.isfile('pyBDSM_clientcred.secret') and os.path.isfile('user.secret')
+    app_init = os.path.isfile("data/pyBDSM_clientcred.secret") and os.path.isfile("data/user.secret")
     if settings == None:
         flash('请输入相关设置！')
 
     return render_template('settings.html',settings=settings, app_init=app_init)
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route("/register", methods=["GET", "POST"])
+def register() -> Any:
     settings = Settings.query.first()
     if settings == None:
         flash('请先输入站点地址！')
         return redirect(url_for('settings'))
     else:
+        if os.path.isfile("data/user.secret"):
+            flash('应用已授权！')
+            return redirect(url_for("settings"))
+
         domain = settings.domain
         url = "https://" + domain
+
+        if not os.path.isfile("data/pyBDSM_clientcred.secret"):
+            app_register(url)
+
+        if request.method == 'POST':
+            token = request.form['token'].rstrip()
+            mastodon = Mastodon(client_id="data/pyBDSM_clientcred.secret", api_base_url=url)
+            print("test")
+            mastodon.log_in(code=token, to_file="data/user.secret", scopes=['read'])
+
+        if not os.path.isfile("data/user.secret"):
+            mastodon = Mastodon(client_id="data/pyBDSM_clientcred.secret", api_base_url=url)
+            url = mastodon.auth_request_url(client_id="data/pyBDSM_clientcred.secret", scopes=['read'])
+            return render_template("register.html",url=url)
 
         mastodon, _ = app_login(url)
         account = mastodon.me().acct
         settings.account = account
         db.session.commit()
-
-        if request.method == 'POST':
-            token = request.form['token'].rstrip()
-            mastodon = Mastodon(client_id='pyBDSM_clientcred.secret', api_base_url=url)
-            mastodon.log_in(code=token, to_file='user.secret', scopes=['read'])
-
-            if os.path.isfile('user.secret'):
-                flash('应用已授权！')
-                return redirect(url_for('settings'))
-
-        if not os.path.isfile('pyBDSM_clientcred.secret'):
-            app_register(url)
-        if not os.path.isfile('user.secret'):
-            mastodon = Mastodon(client_id='pyBDSM_clientcred.secret', api_base_url=url)
-            url = mastodon.auth_request_url(client_id='pyBDSM_clientcred.secret', scopes=['read'])
-            return render_template('register.html',url=url)
-
-        flash('已授权过！')
-        return redirect(url_for('settings'))
 
 
 @app.route('/archive', methods=['GET', 'POST'])

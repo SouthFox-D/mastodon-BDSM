@@ -22,7 +22,7 @@ def app_register(url):
 def app_login(url):
     mastodon = Mastodon(
         client_id='data/pyBDSM_clientcred.secret',
-        access_token='user.secret',
+        access_token='data/user.secret',
         api_base_url=url
     )
 
