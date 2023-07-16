@@ -65,7 +65,7 @@ def analysis():
     mask = np.array(Image.open("misc/mask.png"))
 
     for i in year_toots:
-        if i.content != None:
+        if i.content != None and i.acct == settings.account:
             toot_content = html_pattern.sub('', i.content)
             toot_content = url_pattern.sub('', toot_content)
             toot_content = emoji_pattern.sub('', toot_content)
