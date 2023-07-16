@@ -198,6 +198,9 @@ def register() -> Any:
         settings.account = account
         db.session.commit()
 
+        flash('应用授权成功！')
+        return redirect(url_for("settings"))
+
 
 @app.route('/archive', methods=['GET', 'POST'])
 def archive():
