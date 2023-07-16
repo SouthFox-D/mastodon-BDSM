@@ -30,20 +30,25 @@ def analysis():
     import jieba
     import re
 
-    year_toots = Toot.query.filter(extract('year', Toot.created_at) == 2022)
-    print("2022 总计嘟文" + str(len(year_toots.all())))
-    print("2022 年发言最多天数排名" +
+    year = input(" 请输入要分析的年份。")
+    settings = Settings.query.first()
+
+    year_toots = Toot.query.filter(extract('year', Toot.created_at) == int(year))
+    print(f"{year} 总计嘟文" + str(len(year_toots.all())))
+    print(f"{year} 年发言最多天数排名" +
         str(db.session.query(func.strftime("%Y-%m-%d", Toot.created_at
                                 ).label('date'),func.count('date')
-                                ).filter(extract('year', Toot.created_at) == 2022
+                                ).filter(extract('year', Toot.created_at) == int(year)
+                                ).filter(Toot.acct==settings.account
                                 ).group_by('date'
                                 ).order_by(desc(func.count('date'))
                                 ).all()[:3])
     )
 
-    print("2022 年互动最多帐号排名" +
+    print(f"{year} 年互动最多帐号排名" +
         str(db.session.query(Toot.acct.label('count'),func.count('count')
-                                ).filter(extract('year', Toot.created_at) == 2022
+                                ).filter(extract('year', Toot.created_at) == int(year)
+                                ).filter(Toot.acct!=settings.account
                                 ).group_by('count'
                                 ).order_by(desc(func.count('count'))
                                 ).all()[:3])
@@ -71,8 +76,8 @@ def analysis():
             if i.visibility == 'public':
                 public_counter += 1
 
-    print("2022 实际有内容嘟文数量：" + str(toots_counter))
-    print("2022 公开嘟文数量" + str(public_counter))
+    print(f"{year} 实际有内容嘟文数量：" + str(toots_counter))
+    print(f"{year} 公开嘟文数量" + str(public_counter))
 
     jieba.load_userdict(r'misc/user_dict.txt')
     wordlist = jieba.lcut(toots_content)

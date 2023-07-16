@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "mastodon_bdsm"}]
 
 [tool.poetry.dependencies]
-python = "3.11.2"
+python = "3.11.3"
 wordcloud = "^1.9.1.1"
 blurhash = "1.1.4"
 certifi = "2022.12.7"
